@@ -1,3 +1,4 @@
+import { googleSignUp, signUp } from "@/scripts/authService";
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableHighlight, View } from "react-native";
 import * as z from "zod";
@@ -22,12 +23,13 @@ export default function Registration() {
     }
 
     function handleSubmit() {
-        // const { email, password, confirm_password } = input;
+        // Destructure registration input values
+        const { email, password, confirm_password } = input;
 
-        validateInput(input.email, input.password, input.confirm_password);
+        validateInput(email, password, confirm_password);
     }
 
-    function validateInput(email: User["email"], password: User["password"], cf_password: User["confirm_password"]) {
+    async function validateInput(email: User["email"], password: User["password"], cf_password: User["confirm_password"]) {
         
         // Defining registration schema for validation
         const validation = z.object({
@@ -56,7 +58,8 @@ export default function Registration() {
             return;
         }
 
-        console.log("Validation Success: ", validation.data);
+        // console.log("Validation Success: ", validation.data);
+        await signUp(input.email, input.password);
     }
 
     return (
@@ -66,7 +69,8 @@ export default function Registration() {
             </View>
 
             <View style={styles.signUpContainer}>
-                <TouchableHighlight style={styles.googleSignUp} underlayColor={"#272838"}>
+                <TouchableHighlight style={styles.googleSignUp} underlayColor={"#272838"}
+                onPress={googleSignUp}>
                     <Text>Sign up with Google</Text>
                 </TouchableHighlight>
             </View>
@@ -162,7 +166,7 @@ const styles = StyleSheet.create({
 
     inputBar: {
         marginVertical: 5,
-        padding: 10,
+        padding: 5,
         height: 30,
         width: 300,
         borderWidth: 1,
