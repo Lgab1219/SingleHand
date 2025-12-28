@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { supabase } from "../scripts/supabase";
-import Registration from "./registration";
+import Registration from "./auth/registration";
 
 export default function RootScreen() {
 
@@ -13,7 +13,7 @@ export default function RootScreen() {
         const { data: listener } = supabase.auth.onAuthStateChange(
             (_event, session) => {
                 if (session) {
-                    router.replace("/(tabs)/explore");
+                    router.replace("/(tabs)/expenses");
                 }
             }
         );
