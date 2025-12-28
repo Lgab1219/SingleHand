@@ -1,5 +1,17 @@
 export interface User {
-    email: string,
-    password: string,
-    confirm_password: string
+    email: string;
+    password: string;
+    confirm_password: string;
+}
+
+export interface Option {
+    id: number;
+    label: string;
+    value: string;
+}
+
+export interface PickerProps {
+    optionList: Option[];
+    value?: Option | string;
+    onSelect: (option: Option) => void;
 }
