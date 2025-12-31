@@ -1,7 +1,9 @@
-import { Option } from "@/types";
+import { insertExpense } from "@/scripts/dataService";
+import { supabase } from "@/scripts/supabase";
+import { Expense, Option } from "@/types";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View } from "react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Picker from "../../components/ui/picker";
 
 const categoriesList: Option[] = [
@@ -11,20 +13,23 @@ const categoriesList: Option[] = [
     {id: 4, label: "Travel", value: "travel"},
 ]
 
+const budgetTypeList: Option[] = [
+    {id: 5, label: "Wallet", value: "wallet"},
+    {id: 6, label: "Card", value: "card"},
+]
+
 export default function ExpenseForm() {
 
     const router = useRouter();
 
     const [amount, setAmount] = useState<string>("0.00");
-    const [category, setCategory] = useState<Option>({
-        id: 0,
-        label: "",
-        value: ""
-    });
 
-    useEffect(() => {
-        console.log("Current Category: ", category);
-    }, [category]);
+    const [expense, setExpense] = useState<Expense>({
+        title: "",
+        category: "",
+        budgetType: "",
+        amount: 0.00
+    });
 
     function handleAmount(amount: string) {
 
@@ -38,38 +43,68 @@ export default function ExpenseForm() {
     }
 
     function addAmount() {
-        const value = parseFloat(amount) || 0;
-
-        setAmount(String(value + 1));
+        const fixedNumber = parseFloat(amount) || 0;
+        setAmount((fixedNumber + 1).toFixed(2));
     }
 
     function subAmount() {
-        const value = parseFloat(amount) || 0;
-
-        if (value > 0) {
-            setAmount(String(value - 1));
+        const fixedNumber = parseFloat(amount) || 0;
+        if (fixedNumber > 0) {
+            setAmount((fixedNumber - 1).toFixed(2));
         }
     }
 
+    function handleInput<Key extends keyof Expense>(key: Key, value: Expense[Key]) {
+        setExpense(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+    }
+
+    async function handleSubmit() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            console.log("No user logged in");
+            return;
+        }
+
+        const finalExpense: Expense = {
+            ...expense,
+            amount: parseFloat(amount),
+        }
+
+        const insertSuccess = await insertExpense(finalExpense, user.id);
+
+        if (!insertSuccess) {
+            console.log("Failed to insert expense");
+            return; 
+        }
+
+        // Allows to run the app despite slow internet connection.
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        router.replace("/(tabs)/expenses");
+    }
+
     return (
-        <ScrollView style={{ backgroundColor: "#E0F2E9" }}>
+        <ScrollView style={{ backgroundColor: "#E0F2E9" }} keyboardShouldPersistTaps="always">
             <View style={styles.sectionTitleContainer}>
                 <Text style={styles.sectionTitle}>Add an expense</Text>
             </View>
 
             <View style={styles.sectionContainer}>
                 <Text>Expense</Text>
-                <TextInput style={styles.inputBar} />
+                <TextInput style={styles.inputBar} onChangeText={(text) => {handleInput("title", text)}} />
             </View>
 
             <View style={styles.sectionContainer}>
                 <Text>Category</Text>
-                <Picker optionList={categoriesList} value={category} onSelect={setCategory}  />
+                <Picker optionList={categoriesList} value={expense.category} onSelect={(text) => {handleInput("category", text)}}  />
             </View>
 
             <View style={styles.sectionContainer}>
                 <Text>Select budget</Text>
-                <TextInput style={styles.inputBar} />
+                <Picker optionList={budgetTypeList} value={expense.budgetType} onSelect={(text) => {handleInput("budgetType", text)}} />
             </View>
 
             <View style={styles.sectionContainer}>
@@ -79,21 +114,21 @@ export default function ExpenseForm() {
                     value={amount}
                     onChangeText={handleAmount}
                     keyboardType="decimal-pad" />
-                    <TouchableHighlight style={styles.subButton}
-                    onPress={subAmount}><Text>-</Text></TouchableHighlight>
-                    <TouchableHighlight style={styles.addButton}
-                    onPress={addAmount}><Text style={{ color: "#E0F2E9" }}>+</Text></TouchableHighlight>
+                    <Pressable style={styles.subButton}
+                    onPress={subAmount}><Text>-</Text></Pressable>
+                    <Pressable style={styles.addButton}
+                    onPress={addAmount}><Text style={{ color: "#E0F2E9" }}>+</Text></Pressable>
                 </View>
             </View>
 
             <View style={styles.submitContainer}>
-                <TouchableHighlight style={styles.buttons} onPress={() => {router.replace("/(tabs)/expenses")}}>
+                <Pressable style={styles.buttons} onPress={() => {router.replace("/(tabs)/expenses")}}>
                     <Text style={{ color: "#E0F2E9" }}>Cancel</Text>
-                </TouchableHighlight>
+                </Pressable>
 
-                <TouchableHighlight style={styles.buttons}>
+                <Pressable style={styles.buttons} onPress={handleSubmit}>
                     <Text style={{ color: "#E0F2E9" }}>Submit</Text>
-                </TouchableHighlight>
+                </Pressable>
             </View>
         </ScrollView>
     )
