@@ -43,3 +43,12 @@ export async function googleSignUp() {
         await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     }
 }
+
+export async function logOut() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+        console.log("Logout Error: ", error)
+        return;
+    }
+}
