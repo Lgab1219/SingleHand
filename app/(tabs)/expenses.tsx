@@ -1,7 +1,7 @@
 import { getDailyExpenses, getWeeklyExpenses } from "@/scripts/dataService";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableHighlight, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { supabase } from "../../scripts/supabase";
 
 export default function Expenses() {
@@ -129,9 +129,9 @@ export default function Expenses() {
 
             <View style={styles.sectionContainer}>
                 <Text style={{ color: "#e0f2e952", textAlign: "center" }}>Hold and drag to add an expense</Text>
-                <TouchableHighlight style={styles.addExpense} onPress={() => { router.replace("/(modals)/expenseForm") }}>
+                <Pressable style={({ pressed }) => [styles.addExpense, pressed && styles.pressedAddExpense]} onPress={() => { router.replace("/(modals)/expenseForm") }}>
                     <Text style={styles.plus}>+</Text>
-                </TouchableHighlight>
+                </Pressable>
             </View>
         </ScrollView>
         
@@ -184,6 +184,10 @@ const styles = StyleSheet.create({
         height: 100,
         backgroundColor: "#E0F2E9",
         borderRadius: 50
+    },
+
+    pressedAddExpense: {
+        backgroundColor: "#acdacdff"
     },
 
     plus: {
