@@ -15,3 +15,10 @@ export interface PickerProps {
     value?: Option | string;
     onSelect: (option: Option) => void;
 }
+
+export interface Expense {
+    title: string;
+    category: Option | string;
+    budgetType: Option | string;
+    amount: number;
+}
