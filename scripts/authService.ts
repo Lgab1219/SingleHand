@@ -4,18 +4,17 @@ import { supabase } from "./supabase";
 
 WebBrowser.maybeCompleteAuthSession();
 
-export async function signUp(email: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({
+export async function signUp(email: string, password: string): Promise<string | null> {
+    const { error } = await supabase.auth.signUp({
         email: email,
         password: password,
     });
 
     if (error) {
-        console.log("Sign-up Error: ", error);
-        return;
+        return error.message;
     }
 
-    return data;
+    return null;
 }
 
 // This currently only works for the web app.
