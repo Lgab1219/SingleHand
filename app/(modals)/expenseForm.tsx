@@ -61,7 +61,19 @@ export default function ExpenseForm() {
         }));
     }
 
+    function isExpenseValid(expense: Expense, amount: string): boolean {
+        if (!expense.title?.trim()) return false;
+        if (!expense.category) return false;
+        if (!expense.budgetType) return false;
+
+        const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) return false;
+
+        return true;
+    }
+
     async function handleSubmit() {
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.log("No user logged in");
@@ -73,15 +85,17 @@ export default function ExpenseForm() {
             amount: parseFloat(amount),
         }
 
+        if (!isExpenseValid(finalExpense, amount)) {
+            console.log("Invalid expense data");
+            return;
+        }
+
         const insertSuccess = await insertExpense(finalExpense, user.id);
 
         if (!insertSuccess) {
             console.log("Failed to insert expense");
             return; 
         }
-
-        // Allows to run the app despite slow internet connection.
-        await new Promise(resolve => setTimeout(resolve, 0));
 
         router.replace("/(tabs)/expenses");
     }
@@ -94,7 +108,7 @@ export default function ExpenseForm() {
 
             <View style={styles.sectionContainer}>
                 <Text>Expense</Text>
-                <TextInput style={styles.inputBar} onChangeText={(text) => {handleInput("title", text)}} />
+                <TextInput style={styles.inputBar} value={expense.title} onChangeText={(text) => {handleInput("title", text)}} />
             </View>
 
             <View style={styles.sectionContainer}>
@@ -114,19 +128,19 @@ export default function ExpenseForm() {
                     value={amount}
                     onChangeText={handleAmount}
                     keyboardType="decimal-pad" />
-                    <Pressable style={styles.subButton}
+                    <Pressable style={({ pressed }) => [styles.subButton, pressed && styles.pressedSubButton]}
                     onPress={subAmount}><Text>-</Text></Pressable>
-                    <Pressable style={styles.addButton}
+                    <Pressable style={({ pressed }) => [styles.addButton, pressed && styles.pressedAddButton]}
                     onPress={addAmount}><Text style={{ color: "#E0F2E9" }}>+</Text></Pressable>
                 </View>
             </View>
 
             <View style={styles.submitContainer}>
-                <Pressable style={styles.buttons} onPress={() => {router.replace("/(tabs)/expenses")}}>
+                <Pressable style={({ pressed }) => [styles.buttons, pressed && styles.pressedButtons]} onPress={() => {router.replace("/(tabs)/expenses")}}>
                     <Text style={{ color: "#E0F2E9" }}>Cancel</Text>
                 </Pressable>
 
-                <Pressable style={styles.buttons} onPress={handleSubmit}>
+                <Pressable style={({ pressed }) => [styles.buttons, pressed && styles.pressedButtons]} onPress={handleSubmit}>
                     <Text style={{ color: "#E0F2E9" }}>Submit</Text>
                 </Pressable>
             </View>
@@ -212,6 +226,10 @@ const styles = StyleSheet.create({
         borderRadius: 5
     },
 
+    pressedButtons: {
+        backgroundColor: "#274156AA",
+    },
+
     addButton: {
         width: "20%",
         backgroundColor: "#274156",
@@ -219,6 +237,8 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
+    pressedAddButton: { backgroundColor: "#274156AA"},
 
     subButton: {
         width: "20%",
@@ -229,5 +249,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
+    pressedSubButton: { backgroundColor: "#E0F2E9AA"},
 
 })
