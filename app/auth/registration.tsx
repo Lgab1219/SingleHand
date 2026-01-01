@@ -13,6 +13,8 @@ export default function Registration() {
         confirm_password: ""
     });
 
+    const [errorMessage, setErrorMessage] = useState<string>("");
+
     // "keyof" takes all properties of User.
     // Key "extends" makes sure that the value "Key" provided by the user is in the "User"
     function updateInput<Key extends keyof User>(key: Key, value: User[Key]) {
@@ -52,14 +54,18 @@ export default function Registration() {
             confirm_password: cf_password
         });
 
-        // Return success or error
+        // Error messages from Zod validation.
         if (!validation.success) {
-            console.log("Validation Error: ", validation.error);
+            setErrorMessage(validation.error.issues[0].message);
             return;
         }
 
-        // console.log("Validation Success: ", validation.data);
-        await signUp(input.email, input.password);
+        // Error messages from Supabase
+        const error = await signUp(input.email, input.password);
+
+        if (error) {
+            setErrorMessage(error);
+        }
     }
 
     return (
@@ -82,6 +88,7 @@ export default function Registration() {
             </View>
 
             <View style={styles.signUpContainer}>
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
                 <View style={styles.inputContainer}>
                     <Text>Email</Text>
                     <TextInput style={styles.inputBar} 
@@ -186,5 +193,10 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         padding: 10,
         alignItems: "center"
+    },
+
+    errorMessage: {
+        paddingVertical: 10,
+        color: "red"
     }
 });
