@@ -2,7 +2,7 @@ import { Expense } from "@/types";
 import { supabase } from "./supabase";
 
 export async function insertExpense(expense: Expense, accountId: string): Promise<boolean> {
-    const { data, error } = await supabase
+    const { error } = await supabase
     .from("expenses_history")
     .insert({
         account_id: accountId,
@@ -19,7 +19,7 @@ export async function insertExpense(expense: Expense, accountId: string): Promis
         return false;
     }
 
-    return !!data;
+    return true;
 }
 
 export async function getDailyExpenses(today: string, user_id: string) {
@@ -34,7 +34,6 @@ export async function getDailyExpenses(today: string, user_id: string) {
         return [];
     }
 
-    console.log("Supabase Daily Expense Inserted!");
     return dailyExpenses;
 }
 
@@ -50,6 +49,5 @@ export async function getWeeklyExpenses(week: string, user_id: string) {
         return [];
     }
 
-    console.log("Supabase Weekly Expense Inserted!");
     return weeklyExpenses;
 }
