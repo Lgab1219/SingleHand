@@ -1,4 +1,4 @@
-import { Expense } from "@/types";
+import { Budget, Expense } from "@/types";
 import { supabase } from "./supabase";
 
 export async function insertExpense(expense: Expense, accountId: string): Promise<boolean> {
@@ -10,6 +10,26 @@ export async function insertExpense(expense: Expense, accountId: string): Promis
         category: expense.category,
         budget_type: expense.budgetType,
         amount: expense.amount,
+    })
+    .select()
+    .single();
+
+    if (error) {
+        console.log("Supabase Insert Error: ", error);
+        return false;
+    }
+
+    return true;
+}
+
+export async function insertBudget(budget: Budget, accountId: string): Promise<boolean> {
+    const { error } = await supabase
+    .from("budgets")
+    .insert({
+        account_id: accountId,
+        name: budget.name,
+        category: budget.category,
+        amount: budget.amount,
     })
     .select()
     .single();
