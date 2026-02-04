@@ -13,9 +13,9 @@ const categoriesList: Option[] = [
     {id: 4, label: "Travel", value: "travel"},
 ]
 
+// Note: Instead of this option list, fetch the budgets from the database for future updates.
 const budgetTypeList: Option[] = [
-    {id: 5, label: "Wallet", value: "wallet"},
-    {id: 6, label: "Card", value: "card"},
+    {id: 5, label: "No Budget", value: "no-budget"},
 ]
 
 export default function ExpenseForm() {
@@ -113,12 +113,12 @@ export default function ExpenseForm() {
 
             <View style={styles.sectionContainer}>
                 <Text>Category</Text>
-                <Picker optionList={categoriesList} value={expense.category} onSelect={(text) => {handleInput("category", text)}}  />
+                <Picker optionList={categoriesList} value={expense.category} onSelect={(text) => {handleInput("category", text.value)}}  />
             </View>
 
             <View style={styles.sectionContainer}>
                 <Text>Select budget</Text>
-                <Picker optionList={budgetTypeList} value={expense.budgetType} onSelect={(text) => {handleInput("budgetType", text)}} />
+                <Picker optionList={budgetTypeList} value={expense.budgetType} onSelect={(text) => {handleInput("budgetType", text.value)}} />
             </View>
 
             <View style={styles.sectionContainer}>
@@ -249,7 +249,5 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-
     pressedSubButton: { backgroundColor: "#E0F2E9AA"},
-
 })
