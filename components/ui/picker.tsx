@@ -14,7 +14,7 @@ export default function Picker({ optionList, value, onSelect }: PickerProps) {
     // useMemo saves and returns a cached value.
     // The value will not be removed unless there are changes in the dependecies array
     const selectedOption = useMemo(() => {
-        return optionList.find(option => option === value)?.label ?? "";
+        return optionList.find(option => option.value === value)?.label ?? "";
     }, [value]); 
 
     function selectOption(option: Option) {
