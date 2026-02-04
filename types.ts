@@ -22,3 +22,8 @@ export interface Expense {
     budgetType: Option | string;
     amount: number;
 }
+export interface Budget {
+    name: string;
+    category: Option | string;
+    amount: number;
+}
