@@ -1,4 +1,4 @@
-import { Budget, Expense } from "@/types";
+import { Budget, Expense, Option } from "@/types";
 import { supabase } from "./supabase";
 
 export async function insertExpense(expense: Expense, accountId: string): Promise<boolean> {
@@ -70,4 +70,36 @@ export async function getWeeklyExpenses(week: string, user_id: string) {
     }
 
     return weeklyExpenses;
+}
+
+export async function getBudgets(user_id: string): Promise<Budget[]> {
+    const { data: budgets, error: budgetsError } = await supabase
+    .from("budgets")
+    .select("*")
+    .eq("account_id", user_id);
+
+    if (budgetsError) {
+        console.log("Supabase Get Budgets Error: ", budgetsError);
+        return [];
+    }
+
+    return budgets ?? [];
+}
+
+export async function getBudgetOptions(user_id: string): Promise<Option[]> {
+    const { data: budgetOption, error: budgetOptionError } = await supabase
+    .from("budgets")
+    .select("budget_id, name")
+    .eq("account_id", user_id);
+
+    if (budgetOptionError) {
+        console.log("Supabase Get Budget Options Error: ", budgetOptionError);
+        return [];
+    }
+
+    return budgetOption?.map((budget) => ({
+        id: budget.budget_id,
+        label: budget.name,
+        value: budget.budget_id
+    })) ?? [];
 }
