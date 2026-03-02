@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Picker from "../../components/ui/picker";
 
+// NOTE: Add an error message if isBudgetValid returns false
+
 const categoriesList: Option[] = [
     {id: 1, label: "Food", value: "food"},
     {id: 2, label: "Essentials", value: "essentials"},
@@ -19,9 +21,11 @@ export default function BudgetForm() {
 
     const [amount, setAmount] = useState<string>("0.00");
     const [budget, setBudget] = useState<Budget>({
+        budget_id: "",
         name: "",
         category: "",
-        amount: 0.00
+        total_amount: 0.00,
+        remaining_amount: 0.00,
     })
 
 
@@ -75,7 +79,8 @@ export default function BudgetForm() {
 
         const finalBudget: Budget = {
             ...budget,
-            amount: parseFloat(amount),
+            total_amount: parseFloat(amount),
+            remaining_amount: parseFloat(amount),
         }
 
         if (!isBudgetValid(finalBudget, amount)) {
