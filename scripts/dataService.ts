@@ -29,7 +29,8 @@ export async function insertBudget(budget: Budget, accountId: string): Promise<b
         account_id: accountId,
         name: budget.name,
         category: budget.category,
-        amount: budget.amount,
+        total_amount: budget.total_amount,
+        remaining_amount: budget.remaining_amount,
     })
     .select()
     .single();
@@ -102,4 +103,18 @@ export async function getBudgetOptions(user_id: string): Promise<Option[]> {
         label: budget.name,
         value: budget.budget_id
     })) ?? [];
+}
+
+export async function updateBudgetAmount(budgetId: string, newAmount: number): Promise<boolean> {
+    const { error: updatedBudgetError } = await supabase
+    .from("budgets")
+    .update({ remaining_amount: newAmount })
+    .eq("budget_id", budgetId);
+
+    if (updatedBudgetError) {
+        console.log("Supabase Update Budget Amount Error: ", updatedBudgetError);
+        return false;
+    }
+
+    return true;
 }
