@@ -24,7 +24,9 @@ export interface Expense {
 }
 
 export interface Budget {
+    budget_id: string;
     name: string;
     category: Option | string;
-    amount: number | null;
+    total_amount: number;
+    remaining_amount: number;
 }
