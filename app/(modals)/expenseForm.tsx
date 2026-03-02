@@ -1,4 +1,4 @@
-import { getBudgetOptions, insertExpense } from "@/scripts/dataService";
+import { getBudgetOptions, getBudgets, insertExpense, updateBudgetAmount } from "@/scripts/dataService";
 import { supabase } from "@/scripts/supabase";
 import { Expense, Option } from "@/types";
 import { useRouter } from "expo-router";
@@ -16,6 +16,8 @@ const categoriesList: Option[] = [
 export default function ExpenseForm() {
 
     const router = useRouter();
+
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     const [amount, setAmount] = useState<string>("0.00");
 
@@ -90,7 +92,7 @@ export default function ExpenseForm() {
     function isExpenseValid(expense: Expense, amount: string): boolean {
         if (!expense.title?.trim()) return false;
         if (!expense.category) return false;
-        if (!expense.budgetType) return false;
+        if (expense.budgetType === undefined) return false;
 
         const parsedAmount = parseFloat(amount);
         if (isNaN(parsedAmount) || parsedAmount <= 0) return false;
@@ -116,6 +118,13 @@ export default function ExpenseForm() {
             return;
         }
 
+        const recalculateSuccess = await recalculateBudgetAmount(user.id, expense.budgetType as string, finalExpense.amount);
+        if (!recalculateSuccess) {
+            console.log("Failed to recalculate budget amount");
+            console.log(recalculateSuccess);
+            return;
+        }
+
         const insertSuccess = await insertExpense(finalExpense, user.id);
 
         if (!insertSuccess) {
@@ -124,6 +133,31 @@ export default function ExpenseForm() {
         }
 
         router.replace("/(tabs)/expenses");
+    }
+
+    async function recalculateBudgetAmount(userId: string, budgetType: string, expenseAmount: number): Promise<boolean> {
+        if (budgetType === "" || budgetType === "no-budget") return true;
+
+        const budgetTable = await getBudgets(userId);
+        const selectedBudget = budgetTable.find((budget) => budget.budget_id === budgetType);
+
+        if (!selectedBudget) {
+            console.log("Selected budget: ", budgetType);
+            return false;
+        }
+
+        
+        const updatedBudgetAmount = selectedBudget.remaining_amount - expenseAmount;
+        
+        // This should have triggered when I expense greater than the budget
+        if (updatedBudgetAmount < 0) {
+            setErrorMessage("Budget limit reached. Cannot add more expenses to this budget.");
+            return false;
+        }
+
+        const success = await updateBudgetAmount(selectedBudget.budget_id, updatedBudgetAmount);
+        
+        return success;
     }
 
     return (
@@ -148,6 +182,7 @@ export default function ExpenseForm() {
             </View>
 
             <View style={styles.sectionContainer}>
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
                 <Text>Amount</Text>
                 <View style={styles.amountContainer}>
                     <TextInput style={styles.amountBar}
@@ -216,6 +251,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         paddingInline: 10,
+        marginTop: 0,
         justifyContent: "space-between",
         gap: 5
     },
@@ -259,7 +295,8 @@ const styles = StyleSheet.create({
     addButton: {
         width: "20%",
         backgroundColor: "#274156",
-        paddingVertical: 18,
+        paddingVertical: 20,
+        marginTop: 10,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -271,9 +308,17 @@ const styles = StyleSheet.create({
         backgroundColor: "#E0F2E9",
         borderWidth: 1,
         borderColor: "#274156",
-        paddingVertical: 18,
+        paddingVertical: 20,
+        marginTop: 10,
         justifyContent: "center",
         alignItems: "center",
     },
     pressedSubButton: { backgroundColor: "#E0F2E9AA"},
+
+    errorMessage: {
+        paddingVertical: 10,
+        color: "red",
+        position: "absolute",
+        bottom: 390,
+    },
 })
