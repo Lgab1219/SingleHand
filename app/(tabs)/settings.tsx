@@ -1,11 +1,13 @@
 import { logOut } from "@/scripts/authService";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Settings() {
     return (
         <ScrollView style={{ backgroundColor: "#274156" }}>
             <View style={styles.sectionContainer}>
-                <Text style={styles.logout} onPress={logOut}>Logout</Text>
+                <Pressable onPress={logOut} style={({ pressed }) => [styles.logout, pressed && styles.pressedLogout]}>
+                <Text>Logout</Text>
+                </Pressable>
             </View>
         </ScrollView>
     )
@@ -17,16 +19,23 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         marginTop: 30,
         flex: 1,
-        alignSelf: "center"
+        alignSelf: "center",
+        width: "100%",
     },
 
     logout: {
-        backgroundColor: "#274156",
-        color: "#E0F2E9",
-        padding: 15,
+        width: "90%",
+        backgroundColor: "#E0F2E9",
+        color: "#274156",
+        paddingVertical: 20,
+        marginVertical: 20,
         alignItems: "center",
-        flex: 1,
-        textAlign: "center",
-        marginVertical: 50
+        justifyContent: "center",
+        alignSelf: "center",
+    },
+
+    pressedLogout: {
+        backgroundColor: "#274156AA",
+        color: "#E0F2E9"
     },
 })

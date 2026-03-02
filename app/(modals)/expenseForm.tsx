@@ -1,8 +1,8 @@
-import { insertExpense } from "@/scripts/dataService";
+import { getBudgetOptions, insertExpense } from "@/scripts/dataService";
 import { supabase } from "@/scripts/supabase";
 import { Expense, Option } from "@/types";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Picker from "../../components/ui/picker";
 
@@ -11,12 +11,7 @@ const categoriesList: Option[] = [
     {id: 2, label: "Essentials", value: "essentials"},
     {id: 3, label: "Leisure", value: "leisure"},
     {id: 4, label: "Travel", value: "travel"},
-]
-
-// Note: Instead of this option list, fetch the budgets from the database for future updates.
-const budgetTypeList: Option[] = [
-    {id: 5, label: "No Budget", value: "no-budget"},
-]
+];
 
 export default function ExpenseForm() {
 
@@ -30,6 +25,37 @@ export default function ExpenseForm() {
         budgetType: "",
         amount: 0.00
     });
+
+    const [budgets, setBudgets] = useState<Option[]>([
+        {
+            id: 0,
+            label: "No Budget",
+            value: ""
+        },
+    ]);
+
+    useEffect(() => {
+        async function fetchBudgetOptions() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                console.log("No user logged in");
+                return;
+            }
+
+            const budgetOptions = await getBudgetOptions(user.id);
+
+            setBudgets([
+                {
+                    id: 0,
+                    label: "No Budget",
+                    value: "no-budget",
+                },
+                ...budgetOptions
+            ]);
+        }
+
+        fetchBudgetOptions();
+    }, []);
 
     function handleAmount(amount: string) {
 
@@ -118,7 +144,7 @@ export default function ExpenseForm() {
 
             <View style={styles.sectionContainer}>
                 <Text>Select budget</Text>
-                <Picker optionList={budgetTypeList} value={expense.budgetType} onSelect={(text) => {handleInput("budgetType", text.value)}} />
+                <Picker optionList={budgets} value={expense.budgetType} onSelect={(text) => {handleInput("budgetType", text.value)}} />
             </View>
 
             <View style={styles.sectionContainer}>

@@ -5,7 +5,7 @@ export interface User {
 }
 
 export interface Option {
-    id: number;
+    id: number | string;
     label: string;
     value: string;
 }
@@ -22,8 +22,9 @@ export interface Expense {
     budgetType: Option | string;
     amount: number;
 }
+
 export interface Budget {
     name: string;
     category: Option | string;
-    amount: number;
+    amount: number | null;
 }
