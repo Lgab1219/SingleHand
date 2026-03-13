@@ -32,22 +32,26 @@ export default function Expenses() {
       return now.toISOString();
     }
 
-    function getStartOfWeek() {
+    function getStartOfWeek(): Date {
 
       // Get todays's date
       const now = new Date();
 
       // 0 (Sun) to 6 (Sat)
-      const dayOfWeek = now.getDay();
+      const dayOfWeek = now.getUTCDay();
 
       // Calculate the difference to get the Monday date of the current week
-      const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
       // Set the date
-      const startOfWeek = new Date(now.setDate(diffToMonday));
-      startOfWeek.setHours(0, 0, 0, 0);
+      const startOfWeek = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + diffToMonday,
+        0, 0, 0, 0
+      ));
 
-      return startOfWeek.toISOString();
+      return startOfWeek;
     }
 
     // Fetch and calculate daily and weekly expenses
@@ -93,7 +97,7 @@ export default function Expenses() {
                 return;
             }
 
-            const weekly = getStartOfWeek();
+            const weekly = getStartOfWeek().toISOString();
 
             const weeklyExpense = await getWeeklyExpenses(weekly, user.id);
 
