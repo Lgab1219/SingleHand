@@ -1,3 +1,4 @@
+import AppIcons from "@/components/ui/app-icon";
 import { getBudgets } from "@/scripts/dataService";
 import { supabase } from "@/scripts/supabase";
 import { Budget } from "@/types";
@@ -6,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import * as Progress from "react-native-progress";
 
+// NOTE: Need to figure out how to get the selected values into budgetInfo component
 export default function Budgets() {
 
     const router = useRouter();
@@ -28,6 +30,7 @@ export default function Budgets() {
     }
 
     useEffect(() => {
+
         async function fetchBudgets() {
             const { data: { user } } = await supabase.auth.getUser();
 
@@ -43,20 +46,32 @@ export default function Budgets() {
     return (
         <>
             <ScrollView style={{ backgroundColor: "#274156" }}>
-                <View style={styles.sectionContainer}>
-                    {budgets ? budgets.map((budget, index) => (
-                        <View key={index} style={styles.budgetCard}>
-                            <Text style={styles.budgetTitle}>{budget.name}</Text>
-                            <Text style={styles.budgetSubtitle}>{budget.category as string}</Text>
-                            <Text style={styles.budgetAmount}>{budget.remaining_amount}</Text>
-                            <Progress.Bar width={275} height={10} color="#274156" unfilledColor="#E0F2E9" progress={
-                                calculateProgress(budget.total_amount, budget.remaining_amount)
-                            } borderColor="#274156" />
-                        </View>
-                    )) : 
-                    null
-                    }
-                </View>
+                    <View style={styles.sectionContainer}>
+                        {budgets ? budgets.map((budget, index) => (
+                            <Pressable key={index} onPress={() => {router.replace({
+                                pathname: "/(modals)/budgetInfo",
+                                params: { 
+                                    budgetName: budget.name, 
+                                    budgetCategory: budget.category as string,
+                                    budgetRemainingAmount: budget.remaining_amount,
+                                    budgetTotalAmount: budget.total_amount }
+                            })}}>
+                                <View key={index} style={styles.budgetCard}>
+                                    <View style={styles.returnContainer}>
+                                        <Text style={styles.budgetTitle}>{budget.name}</Text>
+                                        <AppIcons name="selectable" style={{ color: "#274156" }} />
+                                    </View>
+                                    <Text style={styles.budgetSubtitle}>{budget.category as string}</Text>
+                                    <Text style={styles.budgetAmount}>{budget.remaining_amount}</Text>
+                                    <Progress.Bar width={275} height={10} color="#274156" unfilledColor="#E0F2E9" progress={
+                                        calculateProgress(budget.total_amount, budget.remaining_amount)
+                                    } borderColor="#274156" />
+                                </View>
+                            </Pressable>
+                        )) : 
+                        null
+                        }
+                    </View>
             </ScrollView>
                 <View style={styles.addBudgetBtnContainer}>
                     <Pressable style={({ pressed }) => [styles.addBudgetBtn, pressed && styles.pressedBtn]} onPress={() => (router.replace("/(modals)/budgetForm"))}>
@@ -76,6 +91,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginInline: 10,
         zIndex: 10
+    },
+    
+    returnContainer: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
 
     budgetCard: {
